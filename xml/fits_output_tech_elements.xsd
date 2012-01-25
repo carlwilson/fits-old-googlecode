@@ -125,7 +125,7 @@
 			<xs:element name="image" type="imageMetadata"/>
 			<xs:element name="text" type="textMetadata"/>
 			<xs:element name="document" type="documentMetadata"/>
-			<xs:element name="audio" type="audioMetadata"/>
+			<xs:element name="audio" type="audioMetadata"/>			
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="textMetadata">
@@ -137,7 +137,8 @@
 			<xs:element name="markupLanguage" type="fitsMetadataType" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:element name="markupLanguageVersion" type="fitsMetadataType" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
-	</xs:complexType>
+	</xs:complexType>			
+	
 	<xs:complexType name="audioMetadata">
 		<xs:sequence>
 			<xs:element name="duration" type="fitsMetadataType" minOccurs="0" maxOccurs="unbounded"/>

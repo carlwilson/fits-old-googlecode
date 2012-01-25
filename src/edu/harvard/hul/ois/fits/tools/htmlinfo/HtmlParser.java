@@ -2,12 +2,15 @@ package edu.harvard.hul.ois.fits.tools.htmlinfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.htmlparser.Node;
 import org.htmlparser.Parser;
 import org.htmlparser.nodes.RemarkNode;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
+import org.htmlparser.tags.DoctypeTag;
 import org.htmlparser.tags.FrameSetTag;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.tags.ObjectTag;
@@ -31,6 +34,9 @@ public class HtmlParser
 	private long absoluteLinks = 0;
 	private long relativeLinks = 0;
 	private long frameSetCount = 0;
+	private String htmlVersion = "";
+	private String mimeType = "";
+	private String name = "";
 	
 	// indicates, if a tag was found (--> html file)
 	private boolean foundTag = false;
@@ -43,7 +49,7 @@ public class HtmlParser
 		return objects;
 	}
 
-	public static final String PARSER_VERSION = "0.3";
+	public static final String PARSER_VERSION = "0.5";
 	
 	public HtmlParser(String filename)
 	{
@@ -85,27 +91,10 @@ public class HtmlParser
 		}
 	}
 	
-/*	public static void main(String[] args)
+	/*public static void main(String[] args)
 	{
-		/*File[] files = new File("D:\\TU\\dipl\\files").listFiles();
-		for(int i = 0; i < files.length; i++)
-		{		
-			
-			HtmlParser parser = new HtmlParser(files[i].getAbsolutePath());
-			if(i%50 == 0)
-				//LOG.info("file " + i + " of total " + files.length + " examined");
-		}
-		
-		
-		try {
-			HtmlParser parser = new HtmlParser("D:\\TU\\dipl\\files\\temp");
-		} catch (FitsToolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		 
-	}		*/
+			HtmlParser parser = new HtmlParser("D:\\TU\\dipl\\files\\20");
+	}	*/	
 		
 	private boolean processNode (Node node)
 	{
@@ -129,10 +118,17 @@ public class HtmlParser
 			foundTag = true;
 			
 	      // downcast to TagNode
-	      TagNode tag = (TagNode)node;
+	      TagNode tag = (TagNode)node;	      	     
 	      
-	      // count tagnames
-	      incrementMapCount(tags, tag.getTagName(), 1);
+	      if(tag instanceof DoctypeTag)
+	      {
+	      	//htmlVersion = ((DoctypeTag)tag).getText();
+	      	setVersionAndType((DoctypeTag)tag);
+	      }else		// TODO atm: don't increment !doctype tag, maybe change this?
+	      {
+	      	// count tagnames
+		      incrementMapCount(tags, tag.getTagName(), 1);
+	      }
 	      
 	      if(tag instanceof LinkTag)
 	      {
@@ -147,7 +143,7 @@ public class HtmlParser
 	      if(tag instanceof ObjectTag)
 	      {
 	      	/*
-	      	 * The type attribute lets the author define the MIME type of the data used in the object—the file that’s specified 
+	      	 * The type attribute lets the author define the MIME type of the data used in the object—the file thats specified 
 	      	 * in the data attribute. This is slightly different from the codetype attribute, which is used to specify 
 	      	 * the MIME type of the object itself. If the server sends data with the appropriate MIME type, this attribute may be omitted.
 	      	 */
@@ -225,48 +221,65 @@ public class HtmlParser
 			return new Document(new Element("htmlInfo").addContent(new Element("error").setText("No HTML File")));
       // xml root
       Element root = new Element("htmlInfo");
+      // version element
+      Element version = new Element("version");
+      version.setText(htmlVersion);
+      root.addContent(version);
+      // mimetype element
+      Element mime = new Element("mimetype");
+      mime.setText(mimeType);
+      root.addContent(mime);
+      
+      // name element
+      root.addContent(new Element("name").setText(name));
 
       // xml tags element
-      Element tags = new Element("tags");		
-		root.addContent(tags);
-						
-		Map<String, Long> tagMap = this.getTags();
-		
-		for(String tagStr : tagMap.keySet())
-		{
-			Element tag = new Element("tag");
-			Element tagName = new Element("name");
-			Element tagCount = new Element("occurences");
+      if(this.getTags().size() > 0)
+      {
+	      Element tags = new Element("tags");		
+			root.addContent(tags);
+							
+			Map<String, Long> tagMap = this.getTags();
 			
-			// set tag name and number of occurrences in file
-			tagName.setText(tagStr);
-			tagCount.setText(tagMap.get(tagStr).toString());
-			
-			tag.addContent(tagName);
-			tag.addContent(tagCount);
-			
-			tags.addContent(tag);
-		}
+			for(String tagStr : tagMap.keySet())
+			{
+				Element tag = new Element("tag");
+				Element tagName = new Element("name");
+				Element tagCount = new Element("occurences");
+				
+				// set tag name and number of occurrences in file
+				tagName.setText(tagStr);
+				tagCount.setText(tagMap.get(tagStr).toString());
+				
+				tag.addContent(tagName);
+				tag.addContent(tagCount);
+				
+				tags.addContent(tag);
+			}
+      }
 		
 		// xml objects element
-		Element objects = new Element("objects");
-		root.addContent(objects);
-		Map<String, Long> objectMap = this.getObjects();
-		
-		for(String objStr : objectMap.keySet())
+		if(this.getObjects().size() > 0)
 		{
-			Element obj = new Element("object");
-			Element tagType = new Element("type");
-			Element tagCount = new Element("occurences");
+			Element objects = new Element("objects");
+			root.addContent(objects);
+			Map<String, Long> objectMap = this.getObjects();
 			
-			// set tag name and number of occurrences in file
-			tagType.setText(objStr);
-			tagCount.setText(objectMap.get(objStr).toString());
-			
-			obj.addContent(tagType);
-			obj.addContent(tagCount);
-			
-			objects.addContent(obj);
+			for(String objStr : objectMap.keySet())
+			{
+				Element obj = new Element("object");
+				Element tagType = new Element("type");
+				Element tagCount = new Element("occurences");
+				
+				// set tag name and number of occurrences in file
+				tagType.setText(objStr);
+				tagCount.setText(objectMap.get(objStr).toString());
+				
+				obj.addContent(tagType);
+				obj.addContent(tagCount);
+				
+				objects.addContent(obj);
+			}
 		}
 		
 		// link count
@@ -276,5 +289,29 @@ public class HtmlParser
 		linkCount.addContent(new Element("relative").setText(""+this.relativeLinks));
 				
 		return new Document(root);
+	}
+	
+	private void setVersionAndType(DoctypeTag tag)
+	{		
+		Pattern pat = Pattern.compile("DTD\\s+([A-Z]*)\\s+([0-9]*.[0-9]*)", Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pat.matcher(tag.getText());
+		if(matcher.find())
+		{
+			if(matcher.group(1).equalsIgnoreCase("html"))
+			{
+				this.mimeType = "text/html";
+				this.name = "Hypertext Markup Language";
+			}
+			else if(matcher.group(1).equalsIgnoreCase("xhtml"))
+			{
+				this.mimeType = "application/xhtml+xml";
+				this.name = "Extensible Hypertext Markup Language";
+			}
+			else
+				this.mimeType = "undefined";
+			this.htmlVersion = matcher.group(2);
+		}else
+			;
+			// TODO what now??
 	}
 }

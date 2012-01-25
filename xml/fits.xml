@@ -4,6 +4,7 @@
 	<!-- Order of the tools determines preference -->
 	<tools>		
 		<!-- exclude-exts attribute is a comma delimited list of file extensions that the tool should not try to process -->
+		<tool class="edu.harvard.hul.ois.fits.tools.htmlinfo.HtmlInfo" exclude-exts="pdf"/>		
 		<tool class="edu.harvard.hul.ois.fits.tools.oisfileinfo.AudioInfo"/>
 		<tool class="edu.harvard.hul.ois.fits.tools.oisfileinfo.ADLTool"/>
 		<tool class="edu.harvard.hul.ois.fits.tools.jhove.Jhove" exclude-exts="dng,mbx,arw,adl"/> 		   
@@ -14,12 +15,11 @@
 		<tool class="edu.harvard.hul.ois.fits.tools.oisfileinfo.FileInfo"/>
 		<tool class="edu.harvard.hul.ois.fits.tools.oisfileinfo.XmlMetadata"/>	
 		<tool class="edu.harvard.hul.ois.fits.tools.ffident.FFIdent" exclude-exts="dng,wps,vsd"/>		
-		<tool class="edu.harvard.hul.ois.fits.tools.htmlinfo.HtmlInfo" exclude-exts="pdf"/>
 	</tools>
 		
 	<output>
 		<dataConsolidator class="edu.harvard.hul.ois.fits.consolidation.OISConsolidator"/>
-		<display-tool-output>true</display-tool-output>
+		<display-tool-output>false</display-tool-output>
 		<report-conflicts>true</report-conflicts>	
 		<validate-tool-output>true</validate-tool-output>
 		<internal-output-schema>xml/fits_output.xsd</internal-output-schema>
