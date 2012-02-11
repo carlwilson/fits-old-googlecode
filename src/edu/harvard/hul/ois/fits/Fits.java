@@ -115,7 +115,7 @@ public class Fits {
 		} catch (Exception  e) {
 			throw new FitsConfigurationException("Error creating FITS XML Mapper",e);
 		} 
-		validateToolOutput = config.getBoolean("output.validate-tool-output");
+		validateToolOutput = config.getBoolean("output.validate-tool-output"); 
 		externalOutputSchema   = config.getString("output.external-output-schema");
 		internalOutputSchema   = config.getString("output.internal-output-schema");
 		fitsXmlNamespace   = config.getString("output.fits-xml-namespace");

@@ -3,12 +3,12 @@
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 	<xsl:template match="/">
-		<xsl:if test="not(htmlInfo/error)">
+		
 			<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output"> 
 				<identification>
 		  			<identity>
 		  				<xsl:attribute name="format"><xsl:value-of select="htmlInfo/name" /></xsl:attribute>
-		  				<xsl:attribute name="mimetype"><xsl:value-of select="htmlInfo/mimetype"/></xsl:attribute>		  												
+		  				<xsl:attribute name="mimetype"><xsl:value-of select="htmlInfo/mimetype"/></xsl:attribute>		  						  											
 				  		<version>
 				  			<xsl:value-of select="htmlInfo/version" />
 				  		</version>
@@ -16,6 +16,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 		  		</identification>
 				<metadata>
 					<text>
+						<xsl:element name="contentEncoding"><xsl:value-of select="htmlInfo/encoding"/></xsl:element>
 						<xsl:for-each select="htmlInfo/tags/tag">
 							<xsl:element name="{concat(name, 'TagOccurences')}">								
 								<xsl:value-of select="occurences" />								
@@ -31,7 +32,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 					</text>
 				</metadata>
 		    </fits>
-	    </xsl:if>
+	    
   </xsl:template>
   
 </xsl:stylesheet>

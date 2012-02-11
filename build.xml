@@ -76,7 +76,8 @@
     <javac srcdir="${compile.dirs}"
            debug="${compile.debug}"
            deprecation="${compile.deprecation}"
-	   optimize="${compile.optimize}">
+	   optimize="${compile.optimize}"
+	   includeantruntime="false">
         <classpath refid="compile.classpath">
         </classpath>
     </javac>

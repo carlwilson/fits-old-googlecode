@@ -1,6 +1,7 @@
 package edu.harvard.hul.ois.fits.tools.htmlinfo;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
 
@@ -97,8 +99,20 @@ public class HtmlInfo extends ToolBase
 			System.out.println("valid objects: " + objectCountValid);
 			System.out.println("v.o. avg parsing time: " + avgParsingTimeValid + " ms");
 			System.out.println("v.o. avg xml creation time: " + avgXmlCreationTimeValid + " ms");
-		}
+		}		
+	/*	try {
+			new XMLOutputter().output(rawXml, System.out);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
 		Document fitsXml = transform(xslt, rawXml);
+	/*	try {
+			new XMLOutputter().output(fitsXml, System.out);
+		} catch (IOException e) { 
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		return new ToolOutput(this, fitsXml, rawXml);
 	}
 	

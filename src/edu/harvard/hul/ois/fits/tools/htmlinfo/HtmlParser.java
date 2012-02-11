@@ -37,6 +37,7 @@ public class HtmlParser
 	private String htmlVersion = "";
 	private String mimeType = "";
 	private String name = "";
+	private String encoding = "";	
 	
 	// indicates, if a tag was found (--> html file)
 	private boolean foundTag = false;
@@ -49,7 +50,7 @@ public class HtmlParser
 		return objects;
 	}
 
-	public static final String PARSER_VERSION = "0.5";
+	public static final String PARSER_VERSION = "0.6";
 	
 	public HtmlParser(String filename)
 	{
@@ -68,6 +69,8 @@ public class HtmlParser
 			for (NodeIterator i = parser.elements (); i.hasMoreNodes (); )
 				if(processNode (i.nextNode ()) == false)
 					break;
+			
+			setEncoding(parser.getEncoding());
 			
 	/*		System.out.println("Tag overview:");
 			 //Set<String> tags = tags.keySet();
@@ -92,7 +95,7 @@ public class HtmlParser
 	}
 	
 	/*public static void main(String[] args)
-	{
+	{ 
 			HtmlParser parser = new HtmlParser("D:\\TU\\dipl\\files\\20");
 	}	*/	
 		
@@ -100,7 +103,7 @@ public class HtmlParser
 	{
 		if (node instanceof TextNode)
 		{
-			// first node no tag --> no html file --> return false
+			// first node no tag --> no html file --> return false 
 			if(foundTag == false)
 				return false;
 			// TODO check ob schon Tags gefunden (nicht-html-files werden als textnodes interpretiert)
@@ -230,6 +233,11 @@ public class HtmlParser
       mime.setText(mimeType);
       root.addContent(mime);
       
+      // encoding element
+      Element encoding = new Element("encoding");
+      encoding.setText(this.encoding);
+      root.addContent(encoding);
+      
       // name element
       root.addContent(new Element("name").setText(name));
 
@@ -293,25 +301,42 @@ public class HtmlParser
 	
 	private void setVersionAndType(DoctypeTag tag)
 	{		
-		Pattern pat = Pattern.compile("DTD\\s+([A-Z]*)\\s+([0-9]*.[0-9]*)", Pattern.CASE_INSENSITIVE);
-		Matcher matcher = pat.matcher(tag.getText());
-		if(matcher.find())
+		// html5		
+		if(tag.getText().equalsIgnoreCase("!doctype html"))
 		{
-			if(matcher.group(1).equalsIgnoreCase("html"))
+			this.mimeType = "text/html";
+			this.name = "Hypertext Markup Language";
+			this.htmlVersion = "5";
+		}else
+		{
+			Pattern pat = Pattern.compile("DTD\\s+([A-Z]*)\\s+([0-9]*.[0-9]*)", Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pat.matcher(tag.getText());
+			if(matcher.find())
+			{
+				if(matcher.group(1).equalsIgnoreCase("html"))
+				{
+					this.mimeType = "text/html";
+					this.name = "Hypertext Markup Language";
+				}
+				else if(matcher.group(1).equalsIgnoreCase("xhtml"))
+				{
+					this.mimeType = "application/xhtml+xml";
+					this.name = "Extensible Hypertext Markup Language";
+				}
+				else
+					this.mimeType = "text/html";
+				this.htmlVersion = matcher.group(2);
+			}else
 			{
 				this.mimeType = "text/html";
-				this.name = "Hypertext Markup Language";
+				this.htmlVersion = "0";
 			}
-			else if(matcher.group(1).equalsIgnoreCase("xhtml"))
-			{
-				this.mimeType = "application/xhtml+xml";
-				this.name = "Extensible Hypertext Markup Language";
-			}
-			else
-				this.mimeType = "undefined";
-			this.htmlVersion = matcher.group(2);
-		}else
-			;
+		}
 			// TODO what now??
+	}
+	
+	private void setEncoding(String encoding)
+	{
+		this.encoding = encoding;
 	}
 }
