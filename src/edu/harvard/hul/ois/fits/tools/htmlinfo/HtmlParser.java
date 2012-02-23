@@ -37,7 +37,10 @@ public class HtmlParser
 	private String htmlVersion = "";
 	private String mimeType = "";
 	private String name = "";
-	private String encoding = "";	
+	private String encoding = "";
+	
+	// indicates, if doctype was set with !doctype tag
+	private boolean doctypeSet = false;
 	
 	// indicates, if a tag was found (--> html file)
 	private boolean foundTag = false;
@@ -56,38 +59,20 @@ public class HtmlParser
 	{
 		try {
 			Parser parser = new Parser(filename);
-	/*		NodeList list = parser.parse(null);
-			Node[] nodes = list.toNodeArray();
-			for(Node node : nodes)
-			{
-				//if(node instanceof TagNode)
-				//	System.out.println(((TagNode) node).getTagName());
-				System.out.println(node.getClass());
-			}			 */
 
 			// parse all nodes			
 			for (NodeIterator i = parser.elements (); i.hasMoreNodes (); )
 				if(processNode (i.nextNode ()) == false)
 					break;
 			
-			setEncoding(parser.getEncoding());
+		// no doctype set through !doctype tag
+			if(this.doctypeSet == false)
+				setTypeManually();
 			
-	/*		System.out.println("Tag overview:");
-			 //Set<String> tags = tags.keySet();
-			 for(String tag : tags.keySet())
-			 {
-				 System.out.println(tag + " : " + tags.get(tag));
-			 }
-			 
-			 System.out.println("Object overview:");
-			 for(String tag : objects.keySet())
-			 {
-				 System.out.println(tag + " : " + objects.get(tag));
-			 }
-			 
-			 System.out.println("internal links: " + internalLinks);
-			 System.out.println("external links: " + externalLinks);*/
+			setEncoding(parser.getEncoding());
 			 			 
+		//	new XMLOutputter().output(this.createXml(), System.out);
+			
 		} catch (ParserException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -104,8 +89,8 @@ public class HtmlParser
 		if (node instanceof TextNode)
 		{
 			// first node no tag --> no html file --> return false 
-			if(foundTag == false)
-				return false;
+			/*if(foundTag == false)
+				return false;*/
 			// TODO check ob schon Tags gefunden (nicht-html-files werden als textnodes interpretiert)
 			
 			// downcast to TextNode
@@ -186,13 +171,19 @@ public class HtmlParser
 		return true;
 	 }
 	
-	protected void incrementMapCount(Map<String, Long> map, String key, long increment) {       
-       Long lw = (Long)map.get(key.toLowerCase());
-       if(lw == null) {
-      	 map.put(key.toLowerCase(), new Long(increment));
-       } else {
-      	 map.put(key.toLowerCase(), lw.longValue() + increment);
-       }
+	protected void incrementMapCount(Map<String, Long> map, String key, long increment) {
+		// omit characters that would lead to xslt errors ('<', '>', '&', '?')
+		String tagName = key.toLowerCase().replaceAll("[\\?<>&]", "");
+		
+		if(tagName.length() > 0)
+		{
+	       Long lw = (Long)map.get(tagName);
+	       if(lw == null) {
+	      	 map.put(tagName, new Long(increment));
+	       } else {
+	      	 map.put(tagName, lw.longValue() + increment);
+	       }
+		}
    }
 	
 	/**
@@ -309,7 +300,7 @@ public class HtmlParser
 			this.htmlVersion = "5";
 		}else
 		{
-			Pattern pat = Pattern.compile("DTD\\s+([A-Z]*)\\s+([0-9]*.[0-9]*)", Pattern.CASE_INSENSITIVE);
+			Pattern pat = Pattern.compile("DTD\\s+([A-Za-z]*)\\s+([A-Za-z]*\\s+)?([0-9]*\\.[0-9]*)", Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pat.matcher(tag.getText());
 			if(matcher.find())
 			{
@@ -325,18 +316,28 @@ public class HtmlParser
 				}
 				else
 					this.mimeType = "text/html";
-				this.htmlVersion = matcher.group(2);
+				this.htmlVersion = matcher.group(3);
 			}else
 			{
 				this.mimeType = "text/html";
 				this.htmlVersion = "0";
 			}
 		}
-			// TODO what now??
+		this.doctypeSet = true;
 	}
 	
 	private void setEncoding(String encoding)
 	{
 		this.encoding = encoding;
+	}
+	
+	private void setTypeManually()
+	{
+		// html tag found -> html file
+		if(this.getTags().containsKey("html"))
+		{
+			this.mimeType = "text/html";
+			this.name = "Hypertext Markup Language";
+		}
 	}
 }
