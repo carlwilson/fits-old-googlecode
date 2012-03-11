@@ -9,7 +9,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 		  			<identity>
 		  				<xsl:attribute name="format"><xsl:value-of select="htmlInfo/name" /></xsl:attribute>
 		  				<xsl:attribute name="mimetype"><xsl:value-of select="htmlInfo/mimetype"/></xsl:attribute>
-		  				<xsl:if test="htmlInfo/version != ''">		  						  											
+		  				<xsl:if test="htmlInfo/version != '0'">		  						  											
 					  		<version>
 					  			<xsl:value-of select="htmlInfo/version" />
 					  		</version>

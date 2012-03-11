@@ -1,5 +1,6 @@
 package edu.harvard.hul.ois.fits.tools.htmlinfo;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -19,12 +20,13 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 
 import edu.harvard.hul.ois.fits.Fits;
 import edu.harvard.hul.ois.fits.exceptions.FitsToolException;
 
 
-public class HtmlParser 
+public class HtmlParser  
 {
 	//private static final Logger LOG = LoggerFactory.getLogger(HtmlParser.class);
 	public final static String xslt = Fits.FITS_HOME + "xml/htmlinfo/htmlinfo_to_fits.xslt";
@@ -37,7 +39,7 @@ public class HtmlParser
 	private String htmlVersion = "";
 	private String mimeType = "";
 	private String name = "";
-	private String encoding = "";
+	private String encoding = ""; 
 	
 	// indicates, if doctype was set with !doctype tag
 	private boolean doctypeSet = false;
@@ -60,6 +62,9 @@ public class HtmlParser
 		try {
 			Parser parser = new Parser(filename);
 
+			// want to remove htmlparser feedback? uncomment the following line
+			parser.setFeedback(null);
+
 			// parse all nodes			
 			for (NodeIterator i = parser.elements (); i.hasMoreNodes (); )
 				if(processNode (i.nextNode ()) == false)
@@ -71,7 +76,15 @@ public class HtmlParser
 			
 			setEncoding(parser.getEncoding());
 			 			 
-		//	new XMLOutputter().output(this.createXml(), System.out);
+/*			try {
+				new XMLOutputter().output(this.createXml(), System.out);
+			} catch (FitsToolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
 			
 		} catch (ParserException e) {
 			// TODO Auto-generated catch block
@@ -131,7 +144,7 @@ public class HtmlParser
 	      if(tag instanceof ObjectTag)
 	      {
 	      	/*
-	      	 * The type attribute lets the author define the MIME type of the data used in the object—the file thats specified 
+	      	 * The type attribute lets the author define the MIME type of the data used in the object the file thats specified 
 	      	 * in the data attribute. This is slightly different from the codetype attribute, which is used to specify 
 	      	 * the MIME type of the object itself. If the server sends data with the appropriate MIME type, this attribute may be omitted.
 	      	 */
@@ -172,8 +185,12 @@ public class HtmlParser
 	 }
 	
 	protected void incrementMapCount(Map<String, Long> map, String key, long increment) {
-		// omit characters that would lead to xslt errors ('<', '>', '&', '?')
-		String tagName = key.toLowerCase().replaceAll("[\\?<>&]", "");
+		// not safe -- removed
+		// omit characters that would lead to xslt errors ('<', '>', '&', '?', @, ", ')
+		// String tagName = key.toLowerCase().replaceAll("[\\?<>&@'\"]", "");
+		
+		// except the above, remove all non-letters and non-numbers
+		String tagName = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");		
 		
 		if(tagName.length() > 0)
 		{
@@ -315,7 +332,10 @@ public class HtmlParser
 					this.name = "Extensible Hypertext Markup Language";
 				}
 				else
+				{
 					this.mimeType = "text/html";
+					this.name = "Hypertext Markup Language";
+				}
 				this.htmlVersion = matcher.group(3);
 			}else
 			{
