@@ -11,7 +11,7 @@
 	 	<tool class="edu.harvard.hul.ois.fits.tools.fileutility.FileUtility" exclude-exts="dng,wps,adl"/>	 	 
 	 	<tool class="edu.harvard.hul.ois.fits.tools.exiftool.Exiftool" exclude-exts="txt,wps,vsd"/>
 	 	<tool class="edu.harvard.hul.ois.fits.tools.droid.Droid"  exclude-exts="dng"/>
-	 	<tool class="edu.harvard.hul.ois.fits.tools.nlnz.MetadataExtractor" exclude-exts="dng,zip,odb,ott,odg,otg,odp,otp,ods,ots,odc,otc,odi,oti,odf,otf,odm,oth"/>	
+	 	<!--<tool class="edu.harvard.hul.ois.fits.tools.nlnz.MetadataExtractor" exclude-exts="dng,zip,odb,ott,odg,otg,odp,otp,ods,ots,odc,otc,odi,oti,odf,otf,odm,oth"/>-->	
 		<tool class="edu.harvard.hul.ois.fits.tools.oisfileinfo.FileInfo"/>
 		<tool class="edu.harvard.hul.ois.fits.tools.oisfileinfo.XmlMetadata"/>	
 		<tool class="edu.harvard.hul.ois.fits.tools.ffident.FFIdent" exclude-exts="dng,wps,vsd"/>		
