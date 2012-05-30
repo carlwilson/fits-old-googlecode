@@ -131,7 +131,7 @@ public class HtmlInfo extends ToolBase
 		{
 			Element tag = new Element("tag");
 			Element tagName = new Element("name");
-			Element tagCount = new Element("occurences");
+			Element tagCount = new Element("occurrences");
 			
 			// set tag name and number of occurrences in file
 			tagName.setText(tagStr);
