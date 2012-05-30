@@ -1,18 +1,13 @@
 package edu.harvard.hul.ois.fits.tools.htmlinfo;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
-
-
 
 import edu.harvard.hul.ois.fits.Fits;
 import edu.harvard.hul.ois.fits.exceptions.FitsToolException;
@@ -20,10 +15,15 @@ import edu.harvard.hul.ois.fits.tools.ToolBase;
 import edu.harvard.hul.ois.fits.tools.ToolInfo;
 import edu.harvard.hul.ois.fits.tools.ToolOutput;
 
+/**
+ * 
+ * @author Stefan Schindler (schind85@gmail.com)
+ */
 public class HtmlInfo extends ToolBase
 {
 	private boolean enabled = true;
 	public final static String xslt = Fits.FITS_HOME + "xml/htmlinfo/htmlinfo_to_fits.xslt";
+	// flag that indicates, if debug information is to be shown
 	public final static boolean showParsingTime = false;
 	private HtmlParser parser;
 		
@@ -38,7 +38,6 @@ public class HtmlInfo extends ToolBase
 	public HtmlInfo() throws FitsToolException 
 	{
 		info = new ToolInfo("HtmlInfo", HtmlParser.PARSER_VERSION, null);		
-		//info = new ToolInfo("HtmlInfo", "0.1", null);
 	}
 
 	@Override
@@ -63,10 +62,10 @@ public class HtmlInfo extends ToolBase
 			avgParsingTime = ((objectCount - 1) * avgParsingTime + actualTimeParsing) / objectCount;
 		}
 				
-//		System.out.println("Parsing time: " + (estimatedTime / 1000000f) + "ms");
 		if(showParsingTime)
 			startTimeGenerating = System.nanoTime();
 		
+		// create xml from htmlparser
       Document rawXml = parser.createXml();
       
       if(showParsingTime)
@@ -100,6 +99,7 @@ public class HtmlInfo extends ToolBase
 			System.out.println("v.o. avg parsing time: " + avgParsingTimeValid + " ms");
 			System.out.println("v.o. avg xml creation time: " + avgXmlCreationTimeValid + " ms");
 		}		
+		// uncomment the following lines to show debug output from the raw xml  
 	/*	try {
 			new XMLOutputter().output(rawXml, System.out);
 		} catch (IOException e1) {
@@ -107,6 +107,7 @@ public class HtmlInfo extends ToolBase
 			e1.printStackTrace();
 		}*/
 		Document fitsXml = transform(xslt, rawXml);
+		// uncomment the following lines to show debug output from the fits xml 
 	/*	try {
 			new XMLOutputter().output(fitsXml, System.out);
 		} catch (IOException e) { 
@@ -114,36 +115,6 @@ public class HtmlInfo extends ToolBase
 			e.printStackTrace();
 		}*/
 		return new ToolOutput(this, fitsXml, rawXml);
-	}
-	
-	private Document createXml() throws FitsToolException
-	{		
-      // xml root
-      Element root = new Element("htmlInfo");
-
-      // xml tags element
-      Element tags = new Element("tags");		
-		root.addContent(tags);
-						
-		Map<String, Long> tagMap = parser.getTags();
-		
-		for(String tagStr : tagMap.keySet())
-		{
-			Element tag = new Element("tag");
-			Element tagName = new Element("name");
-			Element tagCount = new Element("occurrences");
-			
-			// set tag name and number of occurrences in file
-			tagName.setText(tagStr);
-			tagCount.setText(tagMap.get(tagStr).toString());
-			
-			tag.addContent(tagName);
-			tag.addContent(tagCount);
-			
-			tags.addContent(tag);
-		}
-		
-		return new Document(root);
 	}
 
 	@Override

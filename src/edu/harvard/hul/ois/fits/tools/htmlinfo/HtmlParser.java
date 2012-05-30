@@ -1,6 +1,5 @@
 package edu.harvard.hul.ois.fits.tools.htmlinfo;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -8,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.htmlparser.Node;
 import org.htmlparser.Parser;
-import org.htmlparser.nodes.RemarkNode;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
 import org.htmlparser.tags.DoctypeTag;
@@ -20,12 +18,14 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
 
 import edu.harvard.hul.ois.fits.Fits;
 import edu.harvard.hul.ois.fits.exceptions.FitsToolException;
 
-
+/**
+ * 
+ * @author Stefan Schindler (schind85@gmail.com)
+ */
 public class HtmlParser  
 {
 	//private static final Logger LOG = LoggerFactory.getLogger(HtmlParser.class);
@@ -55,15 +55,13 @@ public class HtmlParser
 		return objects;
 	}
 
-	public static final String PARSER_VERSION = "0.6";
+	public static final String PARSER_VERSION = "0.7";
 	
 	public HtmlParser(String filename)
 	{
 		try {
-			Parser parser = new Parser(filename);
-
-			// want to remove htmlparser feedback? uncomment the following line
-			parser.setFeedback(null);
+			// remove HtmlParser feedback with 2nd argument
+			Parser parser = new Parser(filename, Parser.DEVNULL);			
 
 			// parse all nodes			
 			for (NodeIterator i = parser.elements (); i.hasMoreNodes (); )
@@ -75,45 +73,20 @@ public class HtmlParser
 				setTypeManually();
 			
 			setEncoding(parser.getEncoding());
-			 			 
-/*			try {
-				new XMLOutputter().output(this.createXml(), System.out);
-			} catch (FitsToolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
 			
 		} catch (ParserException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	/*public static void main(String[] args)
-	{ 
-			HtmlParser parser = new HtmlParser("D:\\TU\\dipl\\files\\20");
-	}	*/	
+	}	
 		
 	private boolean processNode (Node node)
 	{
 		if (node instanceof TextNode)
-		{
-			// first node no tag --> no html file --> return false 
-			/*if(foundTag == false)
-				return false;*/
-			// TODO check ob schon Tags gefunden (nicht-html-files werden als textnodes interpretiert)
-			
+		{			
 			// downcast to TextNode
 			// TextNode text = (TextNode)node;
 	      //System.out.println ("TEXT NODE: " + text.getText ());
-		}
-		else if (node instanceof RemarkNode)
-		{	      
-	      // do whatever processing you want with the comment
-		}
+		}		
 		else if (node instanceof TagNode)
 		{			
 			foundTag = true;
@@ -122,8 +95,7 @@ public class HtmlParser
 	      TagNode tag = (TagNode)node;	      	     
 	      
 	      if(tag instanceof DoctypeTag)
-	      {
-	      	//htmlVersion = ((DoctypeTag)tag).getText();
+	      {	      	
 	      	setVersionAndType((DoctypeTag)tag);
 	      }else		// TODO atm: don't increment !doctype tag, maybe change this?
 	      {
@@ -150,11 +122,7 @@ public class HtmlParser
 	      	 */
 	      	
 	      	ObjectTag oTag = (ObjectTag)tag;
-	      	/*System.out.println("objectclassid:" + oTag.getObjectClassId());
-	      	System.out.println("codebase:" + oTag.getObjectCodeBase());
-	      	System.out.println("codetype:" + oTag.getObjectCodeType());
-	      	System.out.println("data:" + oTag.getObjectData());
-	      	System.out.println("standby:" + oTag.getObjectStandby());*/
+	      
 	      	if(oTag.getObjectType() == null)
 	      		incrementMapCount(objects, "undefined", 1);
 	      	else
@@ -162,8 +130,7 @@ public class HtmlParser
 	      }
 	      
 	      if(tag instanceof FrameSetTag)
-	      {
-	      	//String[] ids = ((FrameSetTag) tag).getIds();
+	      {	      	
 	      	frameSetCount++;
 	      }
 	      
@@ -175,8 +142,7 @@ public class HtmlParser
 	      	{
 					for (NodeIterator i = nl.elements (); i.hasMoreNodes() ; )						
 						processNode (i.nextNode ());
-				} catch (ParserException e) {
-					// TODO Auto-generated catch block
+				} catch (ParserException e) {					
 					e.printStackTrace();
 				}
 	      }
@@ -190,7 +156,9 @@ public class HtmlParser
 		// String tagName = key.toLowerCase().replaceAll("[\\?<>&@'\"]", "");
 		
 		// except the above, remove all non-letters and non-numbers
-		String tagName = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");		
+		String tagName = key.toLowerCase().replaceAll("[^a-zA-Z0-9]", "");
+		// remove leading digits
+		tagName = tagName.replaceAll("^[0-9]*", "");
 		
 		if(tagName.length() > 0)
 		{
@@ -213,6 +181,7 @@ public class HtmlParser
 		/*
 		 * relative links look like this:
 		 * file://localhost/aktuelles
+		 * ./pages/page1
 		 * 
 		 * absolute links look like this:
 		 * http://www.tuwien.ac.at/
@@ -307,6 +276,12 @@ public class HtmlParser
 		return new Document(root);
 	}
 	
+	/**
+	 * Method tries to set version an type of the current html file by using
+	 * common doctype definitions
+	 * 
+	 * @param tag the DoctypeTag
+	 */
 	private void setVersionAndType(DoctypeTag tag)
 	{		
 		// html5		
