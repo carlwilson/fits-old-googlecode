@@ -1,4 +1,7 @@
-This is a fork of the original FITS project that can be found [here](http://code.google.com/p/fits/)
+This is a fork of the original FITS project that can be found at http://code.google.com/p/fits/
 
-It includes a small html parser tool that provides some additional meta data for html files.
-These inlcude a histogramm over the tags, the content-type and the number of absolute and relative links.
+It includes a small html parser tool that provides some additional meta data for html files. These inlcude a histogramm over the tags, the content-type and the number of absolute and relative links.
+
+In order to package it please use the following:
+
+ant clean compile release
